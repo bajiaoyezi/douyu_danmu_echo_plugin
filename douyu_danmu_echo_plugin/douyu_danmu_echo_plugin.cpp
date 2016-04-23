@@ -100,9 +100,9 @@ public:
 	{
 		return LuaContext::instance().inner_on_automsg();
 	}
-	static int get_interval_time()
+	static int get_interval_time_threshold()
 	{
-		return LuaContext::instance().inner_get_interval_time();
+		return LuaContext::instance().inner_get_interval_time_threshold();
 	}
 private:
 	LuaContext()
@@ -176,11 +176,11 @@ private:
 		//convert output from utf8 to utf16
 		return utf8_to_utf16(utf8_output);
 	}
-	int inner_get_interval_time()
+	int inner_get_interval_time_threshold()
 	{
 		load_lua_file();
 		//convert input from utf16 to utf8		
-		return state["inner_get_interval_time"]();
+		return state["inner_get_interval_time_threshold"]();
 	}
 private:
 	const std::wstring lua_file_path = LR"(reply.lua)";
@@ -228,8 +228,8 @@ public:
 			//ms
 			const auto interval_time = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - last_time).count();
 			//sec
-			const int interval_time = LuaContext::get_interval_time();
-			if (interval_time > interval_time *1000)
+			const int interval_time_threshold = LuaContext::get_interval_time_threshold();
+			if (interval_time > interval_time_threshold *1000)
 			{
 				//do send msg
 				send_automsg();

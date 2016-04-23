@@ -23,6 +23,6 @@ function inner_on_automsg()
 end
 
 --sec
-function inner_get_interval_time()
+function inner_get_interval_time_threshold()
 	return 100
 end
