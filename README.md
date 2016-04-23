@@ -1,1 +1,3 @@
-# douyu_danmu_echo_plugin
+# 斗鱼弹幕自动回复插件（C++）
+
+直播开发全过程，地址：http://www.douyu.com/608735
