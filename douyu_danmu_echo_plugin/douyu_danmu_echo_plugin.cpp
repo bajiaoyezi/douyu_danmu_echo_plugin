@@ -69,6 +69,7 @@ private:
 		const auto local = localtime(&t);
 		ofs << L"[" << local->tm_hour << L":" << local->tm_min << L":"<<local->tm_sec<<"]";
 		ofs << L" " << content << std::endl;
+		ofs.flush();
 	}
 private:
 	std::wofstream ofs;
@@ -122,17 +123,23 @@ private:
 	bool load_lua_file()
 	{
 		Logger::logging(L"LuaContext::load_lua_file lua_file_path = " + lua_file_path);
-		return state.Load(utf16_to_utf8(lua_file_path));
+		close_lua();
+		state = new sel::State();
+		return state->Load(utf16_to_utf8(lua_file_path));
 	}
 	void close_lua()
 	{
+		if (state)
+		{
+			delete state;
+		}
 	}
 private:
 	std::wstring inner_on_chat_msg(const std::wstring& user, const std::wstring& msg, const int deserveLev)
 	{
 		load_lua_file();
 		//convert input from utf16 to utf8		
-		const std::string utf8_output = state["inner_on_chat_msg"](utf16_to_utf8(user), utf16_to_utf8(msg), deserveLev);
+		const std::string utf8_output = (*state)["inner_on_chat_msg"](utf16_to_utf8(user), utf16_to_utf8(msg), deserveLev);
 		//convert output from utf8 to utf16
 		return utf8_to_utf16(utf8_output);
 	}
@@ -140,7 +147,7 @@ private:
 	{
 		load_lua_file();
 		//convert input from utf16 to utf8		
-		const std::string utf8_output = state["inner_on_user_gift"](utf16_to_utf8(user), utf16_to_utf8(gift), number);
+		const std::string utf8_output = (*state)["inner_on_user_gift"](utf16_to_utf8(user), utf16_to_utf8(gift), number);
 		//convert output from utf8 to utf16
 		return utf8_to_utf16(utf8_output);
 	}
@@ -148,7 +155,7 @@ private:
 	{
 		load_lua_file();
 		//convert input from utf16 to utf8		
-		const std::string utf8_output = state["inner_on_user_donater"](utf16_to_utf8(user), sliver);
+		const std::string utf8_output = (*state)["inner_on_user_donater"](utf16_to_utf8(user), sliver);
 		//convert output from utf8 to utf16
 		return utf8_to_utf16(utf8_output);
 	}
@@ -156,7 +163,7 @@ private:
 	{
 		load_lua_file();
 		//convert input from utf16 to utf8		
-		const std::string utf8_output = state["inner_on_user_deserve"](utf16_to_utf8(user), num, level);
+		const std::string utf8_output = (*state)["inner_on_user_deserve"](utf16_to_utf8(user), num, level);
 		//convert output from utf8 to utf16
 		return utf8_to_utf16(utf8_output);
 	}
@@ -164,7 +171,7 @@ private:
 	{
 		load_lua_file();
 		//convert input from utf16 to utf8		
-		const std::string utf8_output = state["inner_on_user_enter"](utf16_to_utf8(user), level);
+		const std::string utf8_output = (*state)["inner_on_user_enter"](utf16_to_utf8(user), level);
 		//convert output from utf8 to utf16
 		return utf8_to_utf16(utf8_output);
 	}
@@ -172,7 +179,7 @@ private:
 	{
 		load_lua_file();
 		//convert input from utf16 to utf8		
-		const std::string utf8_output = state["inner_on_automsg"]();
+		const std::string utf8_output = (*state)["inner_on_automsg"]();
 		//convert output from utf8 to utf16
 		return utf8_to_utf16(utf8_output);
 	}
@@ -180,11 +187,11 @@ private:
 	{
 		load_lua_file();
 		//convert input from utf16 to utf8		
-		return state["inner_get_interval_time_threshold"]();
+		return (*state)["inner_get_interval_time_threshold"]();
 	}
 private:
 	const std::wstring lua_file_path = LR"(reply.lua)";
-	sel::State state;
+	sel::State* state = nullptr;
 };
 class PluginContext : public IPluginElement
 {
@@ -220,20 +227,21 @@ public:
 	}
 	void auto_sendmsg_cb()
 	{
+		//sec
+		int interval_time_threshold = LuaContext::get_interval_time_threshold();
 		auto last_time = std::chrono::system_clock::now();
 		while (!exit_flag)
 		{
 			still_active = true;
 			const auto current_time = std::chrono::system_clock::now();
 			//ms
-			const auto interval_time = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - last_time).count();
-			//sec
-			const int interval_time_threshold = LuaContext::get_interval_time_threshold();
+			const auto interval_time = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - last_time).count();			
 			if (interval_time > interval_time_threshold *1000)
 			{
 				//do send msg
 				send_automsg();
 				last_time = current_time;
+				interval_time_threshold = LuaContext::get_interval_time_threshold();
 			}			
 			std::this_thread::sleep_for(std::chrono::microseconds(100));
 		}
@@ -416,7 +424,7 @@ public:
 	{
 		Logger::logging(L"DanmuEchoPlugin::GetName begin.");
 		UTILITY_SCOPE_EXIT([]() {Logger::logging(L"DanmuEchoPlugin::GetName end."); });
-		return L"DanmuEchoPlugin";
+		return L"»úÆ÷ÆÀÂÛÔ±";
 	}
 	virtual IPluginElement* CreateElement() override
 	{
@@ -424,10 +432,6 @@ public:
 		UTILITY_SCOPE_EXIT([]() {Logger::logging(L"DanmuEchoPlugin::CreateElement end."); });
 		assert(handler);
 		assert(!pluginElement);
-		if (pluginElement)
-		{
-			delete pluginElement;
-		}
 		pluginElement = new PluginContext(handler);
 		return pluginElement;
 	}
