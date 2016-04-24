@@ -122,13 +122,20 @@ private:
 	}
 	bool load_lua_file()
 	{
-		Logger::logging(L"LuaContext::load_lua_file lua_file_path = " + lua_file_path);
+		Logger::logging(L"LuaContext::load_lua_file begin , lua_file_path = " + lua_file_path);
+		UTILITY_SCOPE_EXIT([] {
+			Logger::logging(L"LuaContext::load_lua_file end.");
+		});
 		close_lua();
 		state = new sel::State();
 		return state->Load(utf16_to_utf8(lua_file_path));
 	}
 	void close_lua()
 	{
+		Logger::logging(L"LuaContext::close_lua begin.");
+		UTILITY_SCOPE_EXIT([] {
+			Logger::logging(L"LuaContext::close_lua end.");
+		});
 		if (state)
 		{
 			delete state;
@@ -137,6 +144,10 @@ private:
 private:
 	std::wstring inner_on_chat_msg(const std::wstring& user, const std::wstring& msg, const int deserveLev)
 	{
+		Logger::logging(L"LuaContext::inner_on_chat_msg begin.");
+		UTILITY_SCOPE_EXIT([] {
+			Logger::logging(L"LuaContext::inner_on_chat_msg end.");
+		});
 		load_lua_file();
 		//convert input from utf16 to utf8		
 		const std::string utf8_output = (*state)["inner_on_chat_msg"](utf16_to_utf8(user), utf16_to_utf8(msg), deserveLev);
@@ -145,6 +156,10 @@ private:
 	}
 	std::wstring inner_on_user_gift(const std::wstring& user, const std::wstring& gift, const int number)
 	{
+		Logger::logging(L"LuaContext::inner_on_user_gift begin.");
+		UTILITY_SCOPE_EXIT([] {
+			Logger::logging(L"LuaContext::inner_on_user_gift end.");
+		});
 		load_lua_file();
 		//convert input from utf16 to utf8		
 		const std::string utf8_output = (*state)["inner_on_user_gift"](utf16_to_utf8(user), utf16_to_utf8(gift), number);
@@ -153,6 +168,10 @@ private:
 	}
 	std::wstring inner_on_user_donater(const std::wstring& user, const int sliver)
 	{
+		Logger::logging(L"LuaContext::inner_on_user_donater begin.");
+		UTILITY_SCOPE_EXIT([] {
+			Logger::logging(L"LuaContext::inner_on_user_donater end.");
+		});
 		load_lua_file();
 		//convert input from utf16 to utf8		
 		const std::string utf8_output = (*state)["inner_on_user_donater"](utf16_to_utf8(user), sliver);
@@ -161,6 +180,10 @@ private:
 	}
 	std::wstring inner_on_user_deserve(const std::wstring& user, const int num, const int level)
 	{
+		Logger::logging(L"LuaContext::inner_on_user_deserve begin.");
+		UTILITY_SCOPE_EXIT([] {
+			Logger::logging(L"LuaContext::inner_on_user_deserve end.");
+		});
 		load_lua_file();
 		//convert input from utf16 to utf8		
 		const std::string utf8_output = (*state)["inner_on_user_deserve"](utf16_to_utf8(user), num, level);
@@ -169,6 +192,10 @@ private:
 	}
 	std::wstring inner_on_user_enter(const std::wstring& user, const int level)
 	{
+		Logger::logging(L"LuaContext::inner_on_user_enter begin.");
+		UTILITY_SCOPE_EXIT([] {
+			Logger::logging(L"LuaContext::inner_on_user_enter end.");
+		});
 		load_lua_file();
 		//convert input from utf16 to utf8		
 		const std::string utf8_output = (*state)["inner_on_user_enter"](utf16_to_utf8(user), level);
@@ -177,6 +204,10 @@ private:
 	}
 	std::wstring inner_on_automsg()
 	{
+		Logger::logging(L"LuaContext::inner_on_automsg begin.");
+		UTILITY_SCOPE_EXIT([] {
+			Logger::logging(L"LuaContext::inner_on_automsg end.");
+		});
 		load_lua_file();
 		//convert input from utf16 to utf8		
 		const std::string utf8_output = (*state)["inner_on_automsg"]();
@@ -185,6 +216,10 @@ private:
 	}
 	int inner_get_interval_time_threshold()
 	{
+		Logger::logging(L"LuaContext::inner_get_interval_time_threshold begin.");
+		UTILITY_SCOPE_EXIT([] {
+			Logger::logging(L"LuaContext::inner_get_interval_time_threshold end.");
+		});
 		load_lua_file();
 		//convert input from utf16 to utf8		
 		return (*state)["inner_get_interval_time_threshold"]();
@@ -324,7 +359,7 @@ public:
 	//酬勤消息：用户ID，用户昵称，赠送数量，赠送等级
 	virtual void OnDeserveMessage(int id, wchar_t* senderName, int num, int lev)  override
 	{
-		Logger::logging(L"PluginContext::OnChatMessage begin.");
+		Logger::logging(L"PluginContext::OnDeserveMessage begin.");
 		Logger::logging(toWString<wchar_t*>(L"来源用户ID：") + toWString<int>(id));
 		Logger::logging(toWString<wchar_t*>(L"来源用户名：") + toWString<wchar_t*>(senderName));
 		Logger::logging(toWString<wchar_t*>(L"来源用户酬勤数量：") + toWString<int>(num));
@@ -351,7 +386,7 @@ public:
 	//giftnum:赠送的礼物数量
 	virtual void OnGiftMessage(int id, wchar_t* senderName, wchar_t* giftname, int giftnum) override
 	{
-		Logger::logging(L"PluginContext::OnChatMessage begin.");
+		Logger::logging(L"PluginContext::OnGiftMessage begin.");
 		Logger::logging(toWString<wchar_t*>(L"来源用户ID：") + toWString<int>(id));
 		Logger::logging(toWString<wchar_t*>(L"来源用户名：") + toWString<wchar_t*>(senderName));
 		Logger::logging(toWString<wchar_t*>(L"礼物名称：") + toWString<wchar_t*>(giftname));
@@ -374,7 +409,7 @@ public:
 	//用户进入房间消息：
 	virtual void OnUserEnterMessage(wchar_t* senderName, int lev) 
 	{
-		Logger::logging(L"PluginContext::OnChatMessage begin.");		
+		Logger::logging(L"PluginContext::OnUserEnterMessage begin.");		
 		Logger::logging(toWString<wchar_t*>(L"来源用户名：") + toWString<wchar_t*>(senderName));
 		Logger::logging(toWString<wchar_t*>(L"来源用户等级：") + toWString<int>(lev));
 
